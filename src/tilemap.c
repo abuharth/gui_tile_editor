@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <raylib.h>
 #include "tilemap.h"
+// #include "guiGlobals.h"
 
 void CreateTileLayer(TileMap *tileMap) {
     tileMap->numLayers += 1;
@@ -11,32 +12,39 @@ void InitTileMap(TileMap *tileMap) {
     tileMap->layerAlloc = 3;
     tileMap->tileGroupAlloc = 3;
     tileMap->rectAlloc = 32;
-    tileMap->layerWidthAlloc = 128;
-    tileMap->layerHeightAlloc = 64;
+    tileMap->WidthAlloc = 128;
+    tileMap->HeightAlloc = 64;
     tileMap->tileRuleAlloc = 32;
 
-    tileMap->textureLoaded = false;
     // initial memory allocation
     tileMap->tileLayers = (TileLayer*)malloc(tileMap->layerAlloc*sizeof(TileLayer));
-    tileMap->numLayers = 0;
+    tileMap->numLayers = tileMap->layerAlloc;
     tileMap->autoTileGroups = (AutoTileGroup*)malloc(tileMap->tileGroupAlloc*sizeof(AutoTileGroup));
     tileMap->numAutoTileGroups = 0;
     tileMap->tileRects = (Rectangle*)malloc(tileMap->rectAlloc*sizeof(Rectangle));
     tileMap->numTileRects = 0;
     tileMap->tileSize = 16;
     // tileLayers
-    tileMap->width = tileMap->layerWidthAlloc;
-    tileMap->height = tileMap->layerHeightAlloc;
+    tileMap->width = tileMap->WidthAlloc;
+    tileMap->height = tileMap->HeightAlloc;
     for (int i = 0; i < tileMap->layerAlloc; i++) {
-        tileMap->tileLayers[i].tiles = (int**)malloc(tileMap->layerHeightAlloc*sizeof(int*));
-        for (int j = 0; j < tileMap->layerWidthAlloc; j++) {
-                tileMap->tileLayers[i].tiles[j] = (int*)malloc(tileMap->layerWidthAlloc*sizeof(int));
+        tileMap->tileLayers[i].tiles = (int**)malloc(tileMap->HeightAlloc*sizeof(int*));
+        for (int j = 0; j < tileMap->HeightAlloc; j++) {
+                tileMap->tileLayers[i].tiles[j] = (int*)malloc(tileMap->WidthAlloc*sizeof(int));
         }
     }
     // autoTileGroups
     for (int i = 0; i < tileMap->layerAlloc; i++) {
         tileMap->autoTileGroups[i].tileRules = (TileRule*)malloc(tileMap->tileRuleAlloc*sizeof(TileRule));
         tileMap->autoTileGroups[i].numRules = 0;
+    }
+    // zero out tile array
+    for (int i = 0; i < tileMap->layerAlloc; i++) {
+        for (int j = 0; j < tileMap->height; j++) {
+            for (int k = 0; k < tileMap->width; k++) {
+                tileMap->tileLayers[i].tiles[j][k] = -1;
+            }
+        }
     }
 }
 
@@ -45,18 +53,23 @@ void TileMapLoadTexture(TileMap *tileMap, const char *filename) {
     tileMap->textureLoaded = true;
 }
 
+#include <stdio.h>
 void DrawTileMap(TileMap *tileMap) {
+    if (!tileMap->textureLoaded) {
+        return;
+    }
     for (int i = 0; i < tileMap->numLayers; i++) {
         for (int j = 0; j < tileMap->height; j++) {
             for (int k = 0; k < tileMap->width; k++) {
                 int tile = tileMap->tileLayers[i].tiles[j][k];
+                if (tile < 0) continue;
                 // TODO: global camera position and zoom
                 // these attributes will affect the dst rect
                 Rectangle dst = {
-                    k*tileMap->tileSize,
-                    j*tileMap->tileSize,
-                    tileMap->tileSize,
-                    tileMap->tileSize
+                    k*tileMap->tileSize*2,
+                    j*tileMap->tileSize*2,
+                    tileMap->tileSize*2,
+                    tileMap->tileSize*2
                 };
                 DrawTexturePro(
                         tileMap->texture,
@@ -66,6 +79,21 @@ void DrawTileMap(TileMap *tileMap) {
                 );
             }
         }
+    }
+}
+
+void PlaceTile(TileMap *tileMap, int layer, int posX, int posY, int tile) {
+    if (posX < tileMap->width && posY < tileMap->height) {
+        tileMap->tileLayers[layer].tiles[posY][posX] = tile;
+    }
+    // TODO: must allocate more memory
+    else {
+    }
+}
+
+void RemoveTile(TileMap *tileMap, int layer, int posX, int posY) {
+    if (posX < tileMap->width && posY < tileMap->height) {
+        tileMap->tileLayers[layer].tiles[posY][posX] = -1;
     }
 }
 

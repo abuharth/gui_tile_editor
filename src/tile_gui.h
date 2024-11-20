@@ -160,7 +160,7 @@ void UpdateGuiPositions(TileGuiState *state)
     state->layoutRecs[25] = (Rectangle){ state->topRightAnchor.x + -40, state->topRightAnchor.y + 16, 24, 24 };
     state->layoutRecs[26] = (Rectangle){ state->tileWindowAnchor.x + 56, state->tileWindowAnchor.y + 208, 24, 24 };
     state->layoutRecs[27] = (Rectangle){ state->tileWindowAnchor.x + 88, state->tileWindowAnchor.y + 208, 24, 24 };
-    state->layoutRecs[28] = (Rectangle){ 200, 200, 400, 160 };
+    state->layoutRecs[28] = (Rectangle){ state->topRightAnchor.x/2 - 200, state->bottomRightAnchor.y/2 - 100 , 400, 250};
 }
 
 TileGuiState InitTileGui(void)
@@ -185,7 +185,7 @@ TileGuiState InitTileGui(void)
     state.tileSetupWindowActive = false;
     state.tilingTypeEditMode = false;
     state.tilingTypeActive = 0;
-    state.hideGridChecked = false;
+    state.hideGridChecked = true;
     state.tileSizeEditMode = false;
     state.tileSizeValue = 16;
     state.loadTexturePressed = false;
@@ -266,13 +266,27 @@ void TileGui(TileGuiState *state)
     const char *layerDownText = "#120#";
     const char *layerDeleteText = "#113#";
     const char *layerCreateText = "+";
-    const char *messageBoxButtons = "##Yes;##No";
-    const char *messageBoxText = "Are you Sure?";
 
     if (state->tilingTypeEditMode) GuiLock();
     if (state->messageBoxActive) GuiLock();
 
     if (!GuiIsLocked()) UpdateTileWindow(state);
+    GuiToggleGroup(state->layoutRecs[0], controlsButtonsText, &state->controlsButtonsActive);
+    state->fullscreenPressed = GuiButton(state->layoutRecs[25], fullscreenText);
+    GuiGroupBox(state->layoutRecs[1], tilePaneText);
+    GuiLine(state->layoutRecs[2], NULL);
+    state->tileMenuPressed = GuiButton(state->layoutRecs[3], tileMenuText); 
+
+    int lastStyle = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
+    GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
+    GuiLabel(state->layoutRecs[19], layersLabelText);
+    GuiSetStyle(LABEL, TEXT_ALIGNMENT, lastStyle);
+
+    state->layerPressed = GuiButton(state->layoutRecs[20], layerText); 
+    state->layerUpPressed = GuiButton(state->layoutRecs[21], layerUpText); 
+    state->layerDownPressed = GuiButton(state->layoutRecs[22], layerDownText); 
+    state->layerDeletePressed = GuiButton(state->layoutRecs[23], layerDeleteText); 
+    state->layerCreatePressed = GuiButton(state->layoutRecs[24], layerCreateText); 
 
     if (state->tileSetupWindowActive)
     {
@@ -291,30 +305,6 @@ void TileGui(TileGuiState *state)
         state->deleteTileGroupPressed = GuiButton(state->layoutRecs[27], "-");
         GuiLine(state->layoutRecs[18], NULL);
         if (GuiDropdownBox(state->layoutRecs[6], tilingTypeText, &state->tilingTypeActive, state->tilingTypeEditMode)) state->tilingTypeEditMode = !state->tilingTypeEditMode;
-    }
-    GuiToggleGroup(state->layoutRecs[0], controlsButtonsText, &state->controlsButtonsActive);
-    state->fullscreenPressed = GuiButton(state->layoutRecs[25], fullscreenText);
-    GuiGroupBox(state->layoutRecs[1], tilePaneText);
-    GuiLine(state->layoutRecs[2], NULL);
-    state->tileMenuPressed = GuiButton(state->layoutRecs[3], tileMenuText); 
-
-    int lastStyle = GuiGetStyle(LABEL, TEXT_ALIGNMENT);
-    GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT);
-    GuiLabel(state->layoutRecs[19], layersLabelText);
-    GuiSetStyle(LABEL, TEXT_ALIGNMENT, lastStyle);
-
-    state->layerPressed = GuiButton(state->layoutRecs[20], layerText); 
-    state->layerUpPressed = GuiButton(state->layoutRecs[21], layerUpText); 
-    state->layerDownPressed = GuiButton(state->layoutRecs[22], layerDownText); 
-    state->layerDeletePressed = GuiButton(state->layoutRecs[23], layerDeleteText); 
-    state->layerCreatePressed = GuiButton(state->layoutRecs[24], layerCreateText); 
-
-    if (state->messageBoxActive) {
-        GuiUnlock();
-        if ((state->messageBoxSelection = GuiMessageBox(state->layoutRecs[28], NULL, messageBoxText, messageBoxButtons)) >= 0) {
-            state->messageBoxActive = false;
-        }
-        GuiLock();
     }
     
     GuiUnlock();

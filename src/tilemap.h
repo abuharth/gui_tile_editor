@@ -48,8 +48,8 @@ typedef struct TileMap {
     int layerAlloc;
     int tileGroupAlloc;
     int rectAlloc;
-    int layerWidthAlloc;
-    int layerHeightAlloc;
+    int WidthAlloc;
+    int HeightAlloc;
     int tileRuleAlloc;
 } TileMap;
 
