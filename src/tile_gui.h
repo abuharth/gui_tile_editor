@@ -1,4 +1,3 @@
-
 /*******************************************************************************************
 *
 *   TileGui v1.0.0 - Tool Description
@@ -128,6 +127,7 @@ void UpdateGuiPositions(TileGuiState *state)
 {
     state->screenWidth = GetScreenWidth();
     state->screenHeight = GetScreenHeight();
+
     state->topRightAnchor = (Vector2){ state->screenWidth, 0 };
     state->bottomLeftAnchor = (Vector2){ 0, state->screenHeight };
     state->bottomRightAnchor = (Vector2){ state->screenWidth, state->screenHeight };
@@ -187,7 +187,7 @@ TileGuiState InitTileGui(void)
     state.tilingTypeActive = 0;
     state.hideGridChecked = false;
     state.tileSizeEditMode = false;
-    state.tileSizeValue = 0;
+    state.tileSizeValue = 16;
     state.loadTexturePressed = false;
     state.addTileGroupPressed = false;
     state.deleteTileGroupPressed = false;
@@ -280,7 +280,7 @@ void TileGui(TileGuiState *state)
         GuiGroupBox(state->layoutRecs[5], textureBoxText);
         GuiLabel(state->layoutRecs[7], tilingTypeLabelText);
         GuiCheckBox(state->layoutRecs[8], hideGridText, &state->hideGridChecked);
-        if (GuiValueBox(state->layoutRecs[9], tileSizeText, &state->tileSizeValue, 0, 100, state->tileSizeEditMode)) state->tileSizeEditMode = !state->tileSizeEditMode;
+        if (GuiValueBox(state->layoutRecs[9], tileSizeText, &state->tileSizeValue, 0, 256, state->tileSizeEditMode)) state->tileSizeEditMode = !state->tileSizeEditMode;
         state->loadTexturePressed = GuiButton(state->layoutRecs[10], loadTextureText); 
         GuiListView(state->layoutRecs[11], tileGroupsText, &state->tileGroupsScrollIndex, &state->tileGroupsActive);
         GuiLabel(state->layoutRecs[12], tileGroupsLabelText);
