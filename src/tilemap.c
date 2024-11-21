@@ -64,8 +64,6 @@ void DrawTileMap(TileMap *tileMap) {
             for (int k = 0; k < tileMap->width; k++) {
                 int tile = tileMap->tileLayers[i].tiles[j][k];
                 if (tile < 0) continue;
-                // TODO: global camera position and zoom
-                // these attributes will affect the dst rect
                 Rectangle dst = {
                     tileMap->tileSize * k * globals.scale - globals.CameraPos.x,
                     tileMap->tileSize * j * globals.scale - globals.CameraPos.y,
@@ -118,22 +116,15 @@ void ApplyTileRules(TileMap tileMap, int layer, int posX, int posY, AutoTileType
     }
 }
 
-// search through all tilemap rules to see if the tile
-// is in it. Returns the rule and the auto-tile group it resides in
+// search through all auto-tile groups to see if the tile
+// is in it. Returns the auto-tile group it resides in
 AutoTileGroup *SearchAllTileRules(int tile, TileMap tileMap) {
     int numGroups = tileMap.numAutoTileGroups;
-    AutoTileGroup *tileGroup = (AutoTileGroup*)malloc(sizeof(AutoTileGroup));
     for (int i = 0; i < numGroups; i++) {
-        int numRules = tileMap.autoTileGroups[i].numRules;
-        for (int j = 0; j < numRules; j++) {
-            TileRule rule = tileMap.autoTileGroups[i].tileRules[j];
-            if (rule.tile == tile) {
-                tileGroup = &tileMap.autoTileGroups[i];
-                return tileGroup;
-            }
+        if (SearchGroupTile(tile, &tileMap.autoTileGroups[i]) >= 0) {
+            return &tileMap.autoTileGroups[i];
         }
     }
-    free(tileGroup);
     return NULL;
 }
 
