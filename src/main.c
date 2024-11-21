@@ -1,9 +1,7 @@
 // TODO: center the popup window
 // TODO: prompt for a name when the create button is pressed
 // TODO: prompt for a name when layer create or group create
-// TODO: move initialization and button react and draw functions to more
-// suitable places (MAYBE move button and user interaction stuff to one USER-SIDE FILE)
-// TODO: global variables for the user (camera pos, etc.)
+// TODO: move initialization draw functions to more suitable places
 
 #define TILE_GUI_IMPLEMENTATION
 #include "tile_gui.h"
@@ -22,15 +20,14 @@
 #endif
 
 #include "tilemap.h"
+#include "user.h"
+#include "globals.h"
 
 // TILE GUI
 TileGuiState tileGuiState;
 // FILE DIALOGUE
 GuiWindowFileDialogState fileDialogState;
-char fileNameToLoad[512];
-static int screenWidth = 1280;
-static int screenHeight = 720;
-
+// Tilemap
 static TileMap tileMap;
 
 // Module functions declaration
@@ -38,11 +35,22 @@ void UpdateDrawFrame(void);     // Update and Draw one frame
 
 int main(void) {
     // initialization
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     tileGuiState = InitTileGui();
-
-    InitWindow(tileGuiState.screenWidth, tileGuiState.screenHeight, "tilemap editor");
     InitTileMap(&tileMap);
+    tileMap.tileLayers[0].tiles[10][5] = 0;
+    tileMap.tileLayers[0].tiles[10][6] = 0;
+    tileMap.tileLayers[0].tiles[10][7] = 0;
+    tileMap.tileLayers[0].tiles[10][8] = 0;
+    tileMap.tileLayers[0].tiles[11][8] = 0;
+    tileMap.tileLayers[0].tiles[12][8] = 0;
+    tileMap.tileLayers[0].tiles[20][15] = 0;
+    tileMap.tileLayers[0].tiles[21][15] = 0;
+    tileMap.tileLayers[0].tiles[22][15] = 0;
+    tileMap.tileLayers[0].tiles[21][16] = 0;
+    tileMap.tileRects[0] = (Rectangle){ 0, 0, 16, 16 };
+
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(tileGuiState.screenWidth, tileGuiState.screenHeight, "tilemap editor");
     // GUI
     // GuiLoadStyle("style_cyber.rgs");
     GuiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER);
@@ -68,40 +76,7 @@ int main(void) {
 void UpdateDrawFrame(void)
 {
     UpdateGuiPositions(&tileGuiState);
-
-    // React to button presses
-    if (tileGuiState.fullscreenPressed) {
-        if (IsWindowState(FLAG_BORDERLESS_WINDOWED_MODE)) {
-            ClearWindowState(FLAG_BORDERLESS_WINDOWED_MODE);
-            SetWindowSize(screenWidth, screenHeight);
-            UpdateGuiPositions(&tileGuiState);
-        }
-        else {
-            SetWindowState(FLAG_BORDERLESS_WINDOWED_MODE);
-        }
-    }
-    if (tileGuiState.tileMenuPressed) {
-        tileGuiState.tileSetupWindowActive = !tileGuiState.tileSetupWindowActive;
-    }
-    if (tileGuiState.deleteTileGroupPressed) {
-        tileGuiState.messageBoxActive = true;
-    }
-    if (tileGuiState.layerDeletePressed) {
-        tileGuiState.messageBoxActive = true;
-    }
-    // File Dialogue
-    if (fileDialogState.SelectFilePressed)
-    { // Load image file (if supported extension)
-        if (IsFileExtension(fileDialogState.fileNameText, ".png"))
-        { strcpy(fileNameToLoad, TextFormat("%s" PATH_SEPERATOR "%s", fileDialogState.dirPathText, fileDialogState.fileNameText));
-            TileMapLoadTexture(&tileMap, fileNameToLoad);
-        }
-
-        fileDialogState.SelectFilePressed = false;
-    }
-    if (tileGuiState.loadTexturePressed) {
-        fileDialogState.windowActive = true;
-    }
+    UserInput(&tileGuiState, &fileDialogState, &tileMap);
 
     // Draw
     //----------------------------------------------------------------------------------

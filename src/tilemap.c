@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <raylib.h>
 #include "tilemap.h"
-// #include "guiGlobals.h"
+#include "globals.h"
 
 void CreateTileLayer(TileMap *tileMap) {
+    // TODO: allocate memory if numLayers is above the current allocation
     tileMap->numLayers += 1;
 }
 
@@ -66,10 +67,10 @@ void DrawTileMap(TileMap *tileMap) {
                 // TODO: global camera position and zoom
                 // these attributes will affect the dst rect
                 Rectangle dst = {
-                    k*tileMap->tileSize*2,
-                    j*tileMap->tileSize*2,
-                    tileMap->tileSize*2,
-                    tileMap->tileSize*2
+                    tileMap->tileSize * k * globals.scale - globals.CameraPos.x,
+                    tileMap->tileSize * j * globals.scale - globals.CameraPos.y,
+                    tileMap->tileSize * globals.scale,
+                    tileMap->tileSize * globals.scale
                 };
                 DrawTexturePro(
                         tileMap->texture,
