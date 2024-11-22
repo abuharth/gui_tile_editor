@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "raygui.h"
 #include "tile_gui.h"
+#include "tilemap.h"
 #include "globals.h"
 
 TileGuiState InitTileGui(void) {
@@ -149,8 +150,34 @@ Rectangle TextureUIDimensions(TileGuiState *state) {
     return dst;
 }
 
+// TODO: move these global variables to tileguistate
+void DrawTextureGrid(TileGuiState *state) {
+    int size = state->tileSizeValue > 0? state->tileSizeValue: 1;
+    int cols = globals.tx.width/size;
+    int rows = globals.tx.height/size;
+    float scale = globals.txUIRect.width / globals.tx.width;
+    for (int i = 0; i <= rows; i++) {
+        DrawLine(globals.txUIRect.x - 8,
+                globals.txUIRect.y + size*scale*i,
+                globals.txUIRect.x + globals.txUIRect.width + 8,
+                globals.txUIRect.y + size*scale*i,
+                GREEN);
+    }
+    for (int i = 0; i <= cols; i++) {
+        DrawLine(globals.txUIRect.x + size*scale*i,
+                globals.txUIRect.y - 8,
+                globals.txUIRect.x + size*scale*i,
+                globals.txUIRect.y + globals.txUIRect.height + 8,
+                GREEN);
+    }
+};
 
-void TileGui(TileGuiState *state) {
+void DrawSelectionTiles(TileMap *tileMap) {
+    for (int i = 0; i < tileMap->numTileRects; i++) {
+    }
+}
+
+void TileGui(TileGuiState *state, TileMap *tileMap) {
     const char *controlsButtonsText = "#021#;#108#;#68#;#50#;#100#";
     const char *fullscreenText = "#107#";
     const char *tilePaneText = "#100#Tiles";
@@ -219,27 +246,40 @@ void TileGui(TileGuiState *state) {
         DrawTexturePro(globals.tx,
                 (Rectangle){ 0, 0, globals.tx.width, globals.tx.height },
                 globals.txUIRect, (Vector2){ 0, 0 }, 0, WHITE);
+        // define then draw the hovered rects
+        // TODO: move *tile* variable to tilegui state or global so it can be added to tile rects list
+        float scale = globals.txUIRect.width / globals.tx.width;
+        if (CheckCollisionPointRec(globals.MousePos, globals.txUIRect)) {
+            Vector2 mp = { globals.MousePos.x - globals.txUIRect.x,
+                globals.MousePos.y - globals.txUIRect.y };
+            int size = state->tileSizeValue > 0? state->tileSizeValue: 1;
+            int xpos = mp.x/(size*scale);
+            int ypos = mp.y/(size*scale);
+            Rectangle tile = { xpos*size, ypos*size, size, size };
+            globals.rectMouseHover = tile;
+            Rectangle drawTile = { tile.x*scale + globals.txUIRect.x, tile.y*scale + globals.txUIRect.y, tile.width*scale, tile.height*scale };
+            DrawRectangleRec(drawTile, (Color){ 255, 0, 0, 150 });
+        }
+        for (int i = 0; i < tileMap->numTileRects; i++) {
+            // TODO: react to scale changes, this should happen naturally if I
+            // do the previous TODO
+            // TODO: if loading new texture, zero out all rectangles, clear rules, etc.
+            // TODO: clean up some of this code
+            // TODO: add tiles to a selection menu, allow user to select from
+            // them and place them
+            Rectangle rec = tileMap->tileRects[i];
+            rec.x = (rec.x*scale) + globals.txUIRect.x;
+            rec.y = (rec.y*scale) + globals.txUIRect.y;
+            rec.width = rec.width*scale;
+            rec.height = rec.height*scale;
+            DrawRectangleRec(rec, (Color){ 255, 255, 0, 150 });
+            DrawRectangleLinesEx(rec, 3, BLACK);
+        }
         // draw grid over texture
         if (state->hideGridChecked) {
-            int size = state->tileSizeValue;
-            int col = globals.tx.width/size;
-            int row = globals.tx.height/size;
-            float scale = globals.txUIRect.width / globals.tx.width;
-            for (int i = 0; i <= row; i++) {
-                DrawLine(globals.txUIRect.x - 8,
-                        globals.txUIRect.y + size*scale*i,
-                        globals.txUIRect.x + globals.txUIRect.width + 8,
-                        globals.txUIRect.y + size*scale*i,
-                        GREEN);
-            }
-            for (int i = 0; i <= col; i++) {
-                DrawLine(globals.txUIRect.x + size*scale*i,
-                        globals.txUIRect.y - 8,
-                        globals.txUIRect.x + size*scale*i,
-                        globals.txUIRect.y + globals.txUIRect.height + 8,
-                        GREEN);
-            }
+            DrawTextureGrid(state);
         }
+
     }
 
     GuiUnlock();

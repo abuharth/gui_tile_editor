@@ -4,6 +4,7 @@
 #include "raygui.h"
 
 #include <string.h>     // Required for: strcpy()
+#include "tilemap.h"
 
 #ifndef GUI_TILEGUI_H
 #define GUI_TILEGUI_H
@@ -54,7 +55,7 @@ typedef struct {
 } TileGuiState;
 
 TileGuiState InitTileGui(void);
-void TileGui(TileGuiState *state);
+void TileGui(TileGuiState *state, TileMap *tileMap);
 void UpdateGuiPositions(TileGuiState *state);
 
 #endif // GUI_TILEGUI_H

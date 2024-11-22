@@ -3,6 +3,8 @@
 
 #include <raylib.h>
 
+#define PRINT_DEBUG(...) DrawText(TextFormat(__VA_ARGS__), 50, 50, 20, RED)
+
 typedef struct Globals {
     Vector2 CameraPos;
     Vector2 MousePos;
@@ -15,6 +17,7 @@ typedef struct Globals {
     int screenHeight;
     Texture2D tx;
     Rectangle txUIRect;
+    Rectangle rectMouseHover;
 } Globals;
 
 extern Globals globals;

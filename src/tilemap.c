@@ -62,6 +62,10 @@ void CreateTileGroup(TileMap *tileMap, const char *name) {
 
 void TileMapLoadTexture(TileMap *tileMap, const char *filename) {
     Texture2D tx = LoadTexture(filename);
+    // TODO: update tile rects and tiles when a new texture is loaded
+    if (tx.width < tileMap->texture.width || tx.height < tileMap->texture.height) {
+        tileMap->numTileRects = 0;
+    }
     tileMap->texture = tx;
     globals.tx = tx;
 }
@@ -78,15 +82,23 @@ void DrawTileMap(TileMap *tileMap) {
                 Rectangle dst = {
                     k * globals.scale - globals.CameraPos.x,
                     j * globals.scale - globals.CameraPos.y,
-                    globals.scale,
-                    globals.scale
+                    // TODO: to avoid floating point problems, 
+                    // change the data structure for tileMap->rects to store
+                    // positions and width/height relative to the tileSize
+                    (tileMap->tileRects[tile].width/tileMap->tileSize)*globals.scale,
+                    (tileMap->tileRects[tile].height/tileMap->tileSize)*globals.scale
                 };
-                DrawTexturePro(
-                        tileMap->texture,
-                        tileMap->tileRects[tile],
-                        dst,
-                        (Vector2){ 0, 0 }, 0, WHITE
-                );
+                if (tile < tileMap->numTileRects) {
+                    DrawTexturePro(
+                            tileMap->texture,
+                            tileMap->tileRects[tile],
+                            dst,
+                            (Vector2){ 0, 0 }, 0, WHITE
+                            );
+                }
+                else {
+                    DrawRectangleRec((Rectangle){dst.x, dst.y, globals.scale, globals.scale}, BLUE);
+                }
             }
         }
     }
