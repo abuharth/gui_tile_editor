@@ -34,7 +34,6 @@ typedef struct AutoTileGroup {
 
 typedef struct TileMap {
     Texture2D texture;
-    bool textureLoaded;
     TileLayer *tileLayers;
     int numLayers;
     AutoTileGroup *autoTileGroups;
@@ -55,6 +54,8 @@ typedef struct TileMap {
 
 // functions
 void InitTileMap(TileMap *tileMap);
+void CreateTileLayer(TileMap *tileMap, const char *name);
+void CreateTileGroup(TileMap *tileMap, const char *name);
 void TileMapLoadTexture(TileMap *tileMap, const char *filename);
 void DrawTileMap(TileMap *tileMap);
 AutoTileGroup *SearchAllTileRules(int tile, TileMap tileMap);

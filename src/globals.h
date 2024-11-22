@@ -6,12 +6,15 @@
 typedef struct Globals {
     Vector2 CameraPos;
     Vector2 MousePos;
-    Rectangle TileTextureRect;
     float scale;
     int selectedTile;
+    int selectedAutoGroup;
+    int currentLayer;
     int editingMode;
     int screenWidth;
     int screenHeight;
+    Texture2D tx;
+    Rectangle txUIRect;
 } Globals;
 
 extern Globals globals;

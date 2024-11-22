@@ -33,10 +33,13 @@ static TileMap tileMap;
 // Module functions declaration
 void UpdateDrawFrame(void);     // Update and Draw one frame
 
+#define PRINT_DEBUG(...) DrawText(TextFormat(__VA_ARGS__), 50, 50, 20, RED)
+
 int main(void) {
     // initialization
     tileGuiState = InitTileGui();
     InitTileMap(&tileMap);
+    CreateTileLayer(&tileMap, "TestLayer");
     tileMap.tileLayers[0].tiles[10][5] = 0;
     tileMap.tileLayers[0].tiles[10][6] = 0;
     tileMap.tileLayers[0].tiles[10][7] = 0;
@@ -86,38 +89,14 @@ void UpdateDrawFrame(void)
         DrawTileMap(&tileMap);
         // Draw gui
         TileGui(&tileGuiState);
-        // draw texture in tile window
-        if (tileGuiState.tileSetupWindowActive) {
-            if (tileMap.textureLoaded) {
-                Rectangle tmp = tileGuiState.layoutRecs[5];
-                Rectangle dst;
-                // resize
-                float width, height, scale;
-                if ((float)tileMap.texture.width/tileMap.texture.height > (float)tmp.width/tmp.height) {
-                    width = tmp.width - 32;
-                    scale = width / tileMap.texture.width;
-                    height = tileMap.texture.height * scale;
-                    dst = (Rectangle){ tmp.x + 16, tmp.y + (tmp.height - height)/2, width, height };
-                }
-                else {
-                    height = tmp.height - 32;
-                    scale = height / tileMap.texture.height;
-                    width = tileMap.texture.width * scale;
-                    dst = (Rectangle){ tmp.x + (tmp.width - width)/2, tmp.y + 16, width, height };
-                }
-                DrawTexturePro(tileMap.texture,
-                        (Rectangle){ 0, 0, tileMap.texture.width, tileMap.texture.height },
-                        dst, (Vector2){ 0, 0 }, 0, WHITE);
-            }
-        }
         // FILE DIALOG
         GuiUnlock();
         GuiWindowFileDialog(&fileDialogState);
-        if (fileDialogState.windowActive) GuiLock();
+        if (fileDialogState.windowActive)
+            GuiLock();
 
         const char *messageBoxButtons = "##Yes;##No";
         const char *messageBoxText = "Are you Sure?";
-
         if (tileGuiState.messageBoxActive) {
             GuiUnlock();
             if ((tileGuiState.messageBoxSelection = GuiMessageBox(tileGuiState.layoutRecs[28], NULL, messageBoxText, messageBoxButtons)) >= 0) {
@@ -125,6 +104,8 @@ void UpdateDrawFrame(void)
             }
             GuiLock();
         }
+
+        PRINT_DEBUG("current tilegroup: %d\nnumAutoTileGroups: %d", tileGuiState.tileGroupsActive, tileMap.numAutoTileGroups);
 
     EndDrawing();
     //----------------------------------------------------------------------------------

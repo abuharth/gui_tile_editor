@@ -17,11 +17,16 @@
 char fileNameToLoad[512];
 
 Globals globals = {
-    .scale = 1.0f
+    .scale = 32.0f,
+    .currentLayer = 0,
 };
 
 static int screenWidth = 1280;
 static int screenHeight = 720;
+
+void UpdateGlobals(TileGuiState *tileGuiState, TileMap *tileMap) {
+     tileMap->tileSize = tileGuiState->tileSizeValue;
+}
 
 void FullScreenToggle(TileGuiState *tileGuiState) {
     if (IsWindowState(FLAG_BORDERLESS_WINDOWED_MODE)) {
@@ -61,12 +66,14 @@ void UserInput(TileGuiState *tileGuiState, GuiWindowFileDialogState *fileDialogS
     globals.screenHeight = GetScreenHeight();
     globals.MousePos = GetMousePosition();
 
-    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)
-            // TODO: CHECK that the mouse is not overlapping with the tile window
-            || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_SPACE))) {
-        MousePanCamera();
+    if (!CheckCollisionPointRec(globals.MousePos, tileGuiState->layoutRecs[4]) || !tileGuiState->tileSetupWindowActive) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)
+                || (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && IsKeyDown(KEY_SPACE))) {
+            MousePanCamera();
+        }
+
+        ZoomCamera();
     }
-    ZoomCamera();
     if (tileGuiState->fullscreenPressed) {
         FullScreenToggle(tileGuiState);
     }
@@ -82,8 +89,20 @@ void UserInput(TileGuiState *tileGuiState, GuiWindowFileDialogState *fileDialogS
     if (tileGuiState->loadTexturePressed) {
         fileDialogState->windowActive = true;
     }
+    // create tile group
+    if (tileGuiState->addTileGroupPressed) {
+        CreateTileGroup(tileMap, "Testing 123");
+        strcpy(tileGuiState->tileGroupsText, "");
+        for (int i = 0; i < tileMap->numAutoTileGroups; i++) {
+            if (i > 0) {
+                strcat(tileGuiState->tileGroupsText, ";");
+            }
+            strcat(tileGuiState->tileGroupsText, TextFormat("Testing %d", i));
+        }
+    }
     // File Dialogue
     if (fileDialogState->SelectFilePressed) { // Load image file (if supported extension)
         FDLoadTexture(fileDialogState, tileMap);
     }
+    UpdateGlobals(tileGuiState, tileMap);
 }
